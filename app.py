@@ -199,6 +199,13 @@ NOTE_TEMPLATE = '''
             border-color: #ff7b00;
             color: #121212;
         }
+        .share-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.2rem;
+        }
         .share-tip {
             font-size: 0.8rem;
             color: #888888;
@@ -207,6 +214,23 @@ NOTE_TEMPLATE = '''
         }
         .share-tip strong {
             color: #ff7b00;
+        }
+        .delete-btn {
+            background: #1f1f1f;
+            color: #ff4d4d;
+            border: 2px solid #2a2a2a;
+            padding: 0.5rem 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+        .delete-btn:hover {
+            background: #ff4d4d;
+            border-color: #ff4d4d;
+            color: #121212;
         }
         a {
             color: #ff7b00;
@@ -243,6 +267,13 @@ NOTE_TEMPLATE = '''
             .copy-link-btn {
                 width: 100%;
             }
+            .share-footer-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .delete-btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -267,7 +298,12 @@ NOTE_TEMPLATE = '''
                 <input type="text" id="share-link-input" class="share-input" value="{{ request.url_root }}{{ note_id }}" readonly>
                 <button type="button" class="copy-link-btn" onclick="copyShareLink(this)">[ Copy Link ]</button>
             </div>
-            <p class="share-tip">Tip: You can access this note from anywhere by simply adding the code (<strong>{{ note_id }}</strong>) to the end of the URL (e.g., <code>yourwebsite.com/{{ note_id }}</code>).</p>
+            <div class="share-footer-row">
+                <p class="share-tip">Tip: Add code (<strong>{{ note_id }}</strong>) to the end of the URL to access it anywhere.</p>
+                <form action="/{{ note_id }}/delete" method="POST" style="margin:0; width:auto;" onsubmit="return confirm('Delete this note permanently?');">
+                    <button type="submit" class="delete-btn">[ Delete ]</button>
+                </form>
+            </div>
         </div>
         {% endif %}
     </div>
@@ -321,6 +357,11 @@ def load_note(note_id):
     with open(path, 'r', encoding='utf-8') as f:
         return f.read()
 
+def delete_note(note_id):
+    path = os.path.join(NOTES_DIR, f"{note_id}.txt")
+    if os.path.exists(path):
+        os.remove(path)
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -341,6 +382,11 @@ def note(note_id):
     if content is None:
         abort(404)
     return render_template_string(NOTE_TEMPLATE, content=content.strip() if content else '', note_id=note_id, request=request)
+
+@app.route('/<note_id>/delete', methods=['POST'])
+def delete_note_route(note_id):
+    delete_note(note_id)
+    return redirect('/')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
