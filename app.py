@@ -111,6 +111,10 @@ NOTE_TEMPLATE = '''
             box-sizing: border-box;
             transition: border-color 0.2s;
         }
+        textarea::placeholder {
+            color: #555555;
+            font-style: italic;
+        }
         textarea:focus {
             border-color: #ff7b00;
             outline: none;
@@ -338,8 +342,65 @@ NOTE_TEMPLATE = '''
     </div>
 
     <script>
+        // Typewriter Ghost Text Effect
+        const textarea = document.getElementById('note-textarea');
+        const prompts = [
+            "Write down your thoughts...",
+            "Paste code snippets here...",
+            "Keep notes accessible anywhere...",
+            "Draft a quick to-do list..."
+        ];
+        let currentPromptIndex = 0;
+        let currentCharIndex = 0;
+        let isDeleting = false;
+        let typingTimeout;
+
+        function typewriterEffect() {
+            if (textarea.value.length > 0) {
+                textarea.placeholder = "";
+                return;
+            }
+
+            const currentText = prompts[currentPromptIndex];
+
+            if (isDeleting) {
+                textarea.placeholder = currentText.substring(0, currentCharIndex - 1);
+                currentCharIndex--;
+            } else {
+                textarea.placeholder = currentText.substring(0, currentCharIndex + 1);
+                currentCharIndex++;
+            }
+
+            let speed = isDeleting ? 40 : 80;
+
+            if (!isDeleting && currentCharIndex === currentText.length) {
+                speed = 2000; // Pause at full sentence
+                isDeleting = true;
+            } else if (isDeleting && currentCharIndex === 0) {
+                isDeleting = false;
+                currentPromptIndex = (currentPromptIndex + 1) % prompts.length;
+                speed = 500; // Pause before next sentence
+            }
+
+            typingTimeout = setTimeout(typewriterEffect, speed);
+        }
+
+        textarea.addEventListener('input', () => {
+            if (textarea.value.length > 0) {
+                textarea.placeholder = "";
+                clearTimeout(typingTimeout);
+            } else {
+                clearTimeout(typingTimeout);
+                typewriterEffect();
+            }
+        });
+
+        // Start effect on load if empty
+        if (textarea.value.length === 0) {
+            typewriterEffect();
+        }
+
         function copyText(btn) {
-            const textarea = document.getElementById('note-textarea');
             textarea.select();
             textarea.setSelectionRange(0, 99999);
             try {
