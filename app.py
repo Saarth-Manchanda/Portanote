@@ -2,19 +2,56 @@ import os
 from flask import Flask, request, redirect, render_template_string, abort
 import random
 import re
+import psycopg2
+from urllib.parse import urlparse
 
 app = Flask(__name__)
-NOTES_DIR = 'notes'
-os.makedirs(NOTES_DIR, exist_ok=True)
+
+# Neon PostgreSQL connection string from environment variables
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+def get_db_connection():
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL environment variable is not set!")
+    
+    # Parse the URL to handle standard Neon connection strings
+    url = urlparse(DATABASE_URL)
+    return psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port,
+        sslmode='require'
+    )
+
+def init_db():
+    if not DATABASE_URL:
+        return
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS notes (
+                id VARCHAR(10) PRIMARY KEY,
+                content TEXT
+            );
+        ''')
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+
+# Initialize the notes table on startup
+init_db()
 
 WORDS = [
-    # Original words
     'apple', 'beach', 'chair', 'dance', 'eagle', 'flame', 'grape', 'heart', 
     'image', 'juice', 'knife', 'lemon', 'mouse', 'night', 'ocean', 'piano', 
     'queen', 'river', 'smile', 'tiger', 'unity', 'voice', 'water', 'youth', 
     'zebra', 'bread', 'cloud', 'dream', 'earth', 'frost', 'plant', 'stone', 
     'train', 'smart', 'quick', 'sharp', 'green', 'light', 'space', 'storm',
-    # New words
     'amber', 'arrow', 'azure', 'basin', 'berry', 'blade', 'bloom', 'board', 
     'brave', 'brook', 'brush', 'candy', 'cedar', 'chalk', 'charm', 'chest', 
     'cider', 'comet', 'coral', 'crane', 'crest', 'daisy', 'delta', 'drift', 
@@ -34,6 +71,8 @@ NOTE_TEMPLATE = '''
     <meta charset="UTF-8">
     <title>Portanote</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff7b00">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -427,7 +466,6 @@ NOTE_TEMPLATE = '''
             }
         }
 
-        // Typewriter Ghost Text Effect
         const textarea = document.getElementById('note-textarea');
         const prompts = [
             "Write down your thoughts...",
@@ -522,20 +560,43 @@ NOTE_TEMPLATE = '''
 '''
 
 def save_note(note_id, content):
-    with open(os.path.join(NOTES_DIR, f"{note_id}.txt"), 'w', encoding='utf-8') as f:
-        f.write(content)
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('''
+        INSERT INTO notes (id, content) VALUES (%s, %s)
+        ON CONFLICT (id) DO UPDATE SET content = EXCLUDED.content;
+    ''', (note_id, content))
+    conn.commit()
+    cur.close()
+    conn.close()
 
 def load_note(note_id):
-    path = os.path.join(NOTES_DIR, f"{note_id}.txt")
-    if not os.path.exists(path):
-        return None
-    with open(path, 'r', encoding='utf-8') as f:
-        return f.read()
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT content FROM notes WHERE id = %s;', (note_id,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    return row[0] if row else None
 
 def delete_note(note_id):
-    path = os.path.join(NOTES_DIR, f"{note_id}.txt")
-    if os.path.exists(path):
-        os.remove(path)
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('DELETE FROM notes WHERE id = %s;', (note_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+@app.route('/manifest.json')
+def manifest():
+    return {
+        "name": "Portanote",
+        "short_name": "Portanote",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#121212",
+        "theme_color": "#ff7b00"
+    }
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
