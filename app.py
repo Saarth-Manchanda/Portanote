@@ -18,34 +18,30 @@ NOTE_TEMPLATE = '''
     <meta charset="UTF-8">
     <title>Portanote</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #121212;
             min-height: 100vh;
             margin: 0;
-            font-family: 'Roboto', sans-serif;
+            font-family: 'JetBrains Mono', monospace;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: #e0e0e0;
         }
         .container {
-            background: rgba(255, 255, 255, 0.85);
-            border-radius: 24px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
-            padding: 3rem 2.5rem 2.5rem 2.5rem;
+            background: #181818;
+            border-radius: 0px;
+            box-shadow: 8px 8px 0px #0a0a0a;
+            padding: 2.5rem;
             max-width: 700px;
             width: 100%;
             margin: 2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            backdrop-filter: blur(8px);
-            border: 1.5px solid rgba(118, 75, 162, 0.12);
-            transition: box-shadow 0.3s;
-        }
-        .container:hover {
-            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.32);
+            border: 2px solid #2a2a2a;
         }
         .header-row {
             display: flex;
@@ -55,30 +51,37 @@ NOTE_TEMPLATE = '''
             margin-bottom: 2rem;
         }
         h1 {
-            color: #4f3ca7;
+            color: #ff7b00;
             font-weight: 700;
-            letter-spacing: 1px;
-            font-size: 2.2rem;
-            text-shadow: 0 2px 8px rgba(118, 75, 162, 0.08);
+            letter-spacing: -0.5px;
+            font-size: 1.8rem;
             margin: 0;
+            text-transform: uppercase;
         }
         .save-btn {
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            padding: 0.7rem 1.5rem;
-            font-size: 1.08rem;
-            font-weight: 500;
+            background: #ff7b00;
+            color: #121212;
+            border: 2px solid #ff7b00;
+            border-radius: 0px;
+            padding: 0.6rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
             cursor: pointer;
-            transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-            box-shadow: 0 2px 8px rgba(118, 75, 162, 0.10);
+            transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+            box-shadow: 4px 4px 0px #0a0a0a;
             margin-left: 1.2rem;
+            text-transform: uppercase;
         }
         .save-btn:hover {
-            background: linear-gradient(90deg, #764ba2 0%, #667eea 100%);
-            transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 4px 16px rgba(118, 75, 162, 0.16);
+            background: #ff9526;
+            border-color: #ff9526;
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #0a0a0a;
+        }
+        .save-btn:active {
+            transform: translate(0px, 0px);
+            box-shadow: 2px 2px 0px #0a0a0a;
         }
         form {
             width: 100%;
@@ -94,93 +97,103 @@ NOTE_TEMPLATE = '''
             width: 100%;
             min-height: 320px;
             max-height: 60vh;
-            border-radius: 16px;
-            border: 1.5px solid #bdbdbd;
-            padding: 0.7rem 1.1rem 0.7rem 1.1rem;
-            font-size: 1.18rem;
-            font-family: 'Roboto', monospace;
+            border-radius: 0px;
+            border: 2px solid #2a2a2a;
+            padding: 1rem;
+            font-size: 1rem;
+            font-family: 'JetBrains Mono', monospace;
             resize: vertical;
             margin-bottom: 1.2rem;
-            background: rgba(247, 247, 250, 0.95);
-            box-shadow: 0 2px 8px rgba(118, 75, 162, 0.04);
-            transition: border 0.2s, box-shadow 0.2s;
+            background: #141414;
+            color: #f0f0f0;
             box-sizing: border-box;
+            transition: border-color 0.2s;
         }
         textarea:focus {
-            border: 1.5px solid #764ba2;
+            border-color: #ff7b00;
             outline: none;
-            box-shadow: 0 4px 16px rgba(118, 75, 162, 0.10);
         }
         .copy-icon {
             position: absolute;
-            top: 12px;
-            right: 18px;
-            width: 28px;
-            height: 28px;
-            background: none;
-            border: none;
+            top: 14px;
+            right: 14px;
+            width: 32px;
+            height: 32px;
+            background: #1f1f1f;
+            border: 2px solid #2a2a2a;
+            border-radius: 0px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0.7;
-            transition: opacity 0.2s;
+            color: #a0a0a0;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
             z-index: 2;
         }
         .copy-icon:hover {
-            opacity: 1;
+            color: #ff7b00;
+            border-color: #ff7b00;
+            background: #242424;
         }
         .copy-tooltip {
             position: absolute;
-            top: -30px;
+            top: -36px;
             right: 0;
-            background: #4f3ca7;
-            color: #fff;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.95rem;
+            background: #ff7b00;
+            color: #121212;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 0px;
+            font-size: 0.85rem;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s;
             z-index: 3;
+            box-shadow: 2px 2px 0px #0a0a0a;
         }
         .copy-icon.copied + .copy-tooltip {
             opacity: 1;
         }
         .share-link {
-            margin-top: 2rem;
-            background: rgba(247, 247, 250, 0.95);
+            margin-top: 1.5rem;
+            background: #141414;
+            border: 2px solid #2a2a2a;
             padding: 1rem 1.2rem;
-            border-radius: 10px;
-            font-size: 1.05rem;
-            color: #4f3ca7;
+            border-radius: 0px;
+            font-size: 0.95rem;
+            color: #a0a0a0;
             word-break: break-all;
-            box-shadow: 0 1px 4px rgba(118, 75, 162, 0.07);
+            width: 100%;
+            box-sizing: border-box;
         }
         a {
-            color: #764ba2;
-            text-decoration: underline;
+            color: #ff7b00;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff7b00;
             transition: color 0.2s;
         }
         a:hover {
-            color: #4f3ca7;
+            color: #ff9526;
+            border-bottom-style: solid;
         }
         @media (max-width: 800px) {
             .container {
-                padding: 1.5rem 0.5rem 1rem 0.5rem;
-                max-width: 98vw;
+                padding: 1.5rem 1rem;
+                margin: 1rem;
+                box-shadow: 4px 4px 0px #0a0a0a;
             }
             textarea {
-                font-size: 1rem;
+                font-size: 0.95rem;
                 min-height: 180px;
             }
             .header-row {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 0.7rem;
+                gap: 1rem;
             }
             .save-btn {
                 margin-left: 0;
+                width: 100%;
             }
         }
     </style>
@@ -189,20 +202,20 @@ NOTE_TEMPLATE = '''
     <div class="container">
         <form method="post">
             <div class="header-row">
-                <h1>📝 Online Notepad</h1>
-                <button type="submit" class="save-btn">Save</button>
+                <h1>// Portanote</h1>
+                <button type="submit" class="save-btn">[ Save ]</button>
             </div>
             <div class="textarea-wrapper">
                 <textarea id="note-textarea" name="content" rows="18" cols="80">{{ content.strip() if content else '' }}</textarea>
                 <button type="button" class="copy-icon" onclick="copyText(this)" title="Copy to clipboard" tabindex="-1">
-                    <svg viewBox="0 0 24 24" fill="none" width="22" height="22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="0" ry="0"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
-                <span class="copy-tooltip" id="copy-tooltip">Copied!</span>
+                <span class="copy-tooltip" id="copy-tooltip">COPIED!</span>
             </div>
         </form>
         {% if note_id %}
         <div class="share-link">
-            Shareable link: <a href="/{{ note_id }}">{{ request.url_root }}{{ note_id }}</a>
+            SHARE URL: <a href="/{{ note_id }}">{{ request.url_root }}{{ note_id }}</a>
         </div>
         {% endif %}
     </div>
@@ -210,13 +223,12 @@ NOTE_TEMPLATE = '''
         function copyText(btn) {
             const textarea = document.getElementById('note-textarea');
             textarea.select();
-            textarea.setSelectionRange(0, 99999); // For mobile devices
+            textarea.setSelectionRange(0, 99999);
             try {
                 document.execCommand('copy');
             } catch (err) {
                 navigator.clipboard.writeText(textarea.value);
             }
-            // Show tooltip
             const tooltip = document.getElementById('copy-tooltip');
             btn.classList.add('copied');
             tooltip.style.opacity = 1;
@@ -263,4 +275,4 @@ def note(note_id):
     return render_template_string(NOTE_TEMPLATE, content=content.strip() if content else '', note_id=note_id, request=request)
 
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0', debug=True) 
+    app.run(host='0.0.0.0', debug=True)
