@@ -1,6 +1,5 @@
 import os
 from flask import Flask, request, redirect, render_template_string, abort
-import string
 import random
 import re
 
@@ -8,8 +7,25 @@ app = Flask(__name__)
 NOTES_DIR = 'notes'
 os.makedirs(NOTES_DIR, exist_ok=True)
 
-def generate_id(length=5):
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+WORDS = [
+    # Original words
+    'apple', 'beach', 'chair', 'dance', 'eagle', 'flame', 'grape', 'heart', 
+    'image', 'juice', 'knife', 'lemon', 'mouse', 'night', 'ocean', 'piano', 
+    'queen', 'river', 'smile', 'tiger', 'unity', 'voice', 'water', 'youth', 
+    'zebra', 'bread', 'cloud', 'dream', 'earth', 'frost', 'plant', 'stone', 
+    'train', 'smart', 'quick', 'sharp', 'green', 'light', 'space', 'storm',
+    # New words
+    'amber', 'arrow', 'azure', 'basin', 'berry', 'blade', 'bloom', 'board', 
+    'brave', 'brook', 'brush', 'candy', 'cedar', 'chalk', 'charm', 'chest', 
+    'cider', 'comet', 'coral', 'crane', 'crest', 'daisy', 'delta', 'drift', 
+    'eager', 'ember', 'epoch', 'fable', 'fauna', 'fern', 'finch', 'flare', 
+    'flora', 'forge', 'frame', 'gecko', 'giant', 'glade', 'glass', 'gleam', 
+    'globe', 'gloom', 'grail', 'grove', 'guide', 'haven', 'hazel', 'honey', 
+    'ivory', 'jewel'
+]
+
+def generate_id():
+    return random.choice(WORDS)
 
 NOTE_TEMPLATE = '''
 <!DOCTYPE html>
@@ -50,7 +66,7 @@ NOTE_TEMPLATE = '''
             align-items: center;
             justify-content: space-between;
             width: 100%;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
         h1 {
             color: #ff7b00;
@@ -85,6 +101,46 @@ NOTE_TEMPLATE = '''
             transform: translate(0px, 0px);
             box-shadow: 2px 2px 0px #0a0a0a;
         }
+        .lookup-bar {
+            width: 100%;
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+            background: #141414;
+            border: 2px solid #2a2a2a;
+            padding: 0.8rem;
+            box-sizing: border-box;
+        }
+        .lookup-input {
+            flex: 1;
+            background: #121212;
+            border: 2px solid #2a2a2a;
+            color: #e0e0e0;
+            padding: 0.5rem 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .lookup-input:focus {
+            border-color: #ff7b00;
+        }
+        .lookup-btn {
+            background: #1f1f1f;
+            color: #ff7b00;
+            border: 2px solid #2a2a2a;
+            padding: 0.5rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+        .lookup-btn:hover {
+            background: #ff7b00;
+            border-color: #ff7b00;
+            color: #121212;
+        }
         form {
             width: 100%;
             display: flex;
@@ -97,7 +153,7 @@ NOTE_TEMPLATE = '''
         }
         textarea {
             width: 100%;
-            min-height: 320px;
+            min-height: 280px;
             max-height: 60vh;
             border-radius: 0px;
             border: 2px solid #2a2a2a;
@@ -220,6 +276,12 @@ NOTE_TEMPLATE = '''
         .share-tip strong {
             color: #ff7b00;
         }
+        .disclaimer {
+            font-size: 0.75rem;
+            color: #777777;
+            margin-top: 0.4rem;
+            font-style: italic;
+        }
         .delete-btn {
             background: #1f1f1f;
             color: #ff4d4d;
@@ -287,6 +349,12 @@ NOTE_TEMPLATE = '''
                 margin-left: 0;
                 width: 100%;
             }
+            .lookup-bar {
+                flex-direction: column;
+            }
+            .lookup-btn {
+                width: 100%;
+            }
             .share-row {
                 flex-direction: column;
             }
@@ -305,11 +373,16 @@ NOTE_TEMPLATE = '''
 </head>
 <body>
     <div class="container">
+        <div class="header-row">
+            <h1>// Portanote</h1>
+        </div>
+
+        <div class="lookup-bar">
+            <input type="text" id="lookup-code" class="lookup-input" placeholder="Enter 5-letter code to open note...">
+            <button type="button" class="lookup-btn" onclick="openNote()">[ Open Note ]</button>
+        </div>
+
         <form method="post">
-            <div class="header-row">
-                <h1>// Portanote</h1>
-                <button type="submit" class="save-btn">[ Save ]</button>
-            </div>
             <div class="textarea-wrapper">
                 <textarea id="note-textarea" name="content" rows="18" cols="80">{{ content.strip() if content else '' }}</textarea>
                 <button type="button" class="copy-icon" onclick="copyText(this)" title="Copy text to clipboard" tabindex="-1">
@@ -317,7 +390,9 @@ NOTE_TEMPLATE = '''
                 </button>
                 <span class="copy-tooltip" id="copy-tooltip">COPIED!</span>
             </div>
+            <button type="submit" class="save-btn" style="width:100%; margin-left:0; margin-top:0.2rem;">[ Save Note ]</button>
         </form>
+
         {% if note_id %}
         <div class="share-section">
             <div class="share-row">
@@ -325,7 +400,10 @@ NOTE_TEMPLATE = '''
                 <button type="button" class="copy-link-btn" onclick="copyShareLink(this)">[ Copy Link ]</button>
             </div>
             <div class="share-footer-row">
-                <p class="share-tip">Tip: Add code (<strong>{{ note_id }}</strong>) to the end of the URL to access it anywhere.</p>
+                <div>
+                    <p class="share-tip">Tip: Enter code (<strong>{{ note_id }}</strong>) above or add it to the URL to access it anywhere.</p>
+                    <p class="disclaimer">* Note: These 5-letter words are completely random and do not in any way represent the content of your note.</p>
+                </div>
                 <form action="/{{ note_id }}/delete" method="POST" style="margin:0; width:auto;" onsubmit="return confirm('Delete this note permanently?');">
                     <button type="submit" class="delete-btn">[ Delete ]</button>
                 </form>
@@ -342,6 +420,13 @@ NOTE_TEMPLATE = '''
     </div>
 
     <script>
+        function openNote() {
+            const code = document.getElementById('lookup-code').value.trim().toLowerCase();
+            if (code) {
+                window.location.href = '/' + code;
+            }
+        }
+
         // Typewriter Ghost Text Effect
         const textarea = document.getElementById('note-textarea');
         const prompts = [
@@ -374,12 +459,12 @@ NOTE_TEMPLATE = '''
             let speed = isDeleting ? 40 : 80;
 
             if (!isDeleting && currentCharIndex === currentText.length) {
-                speed = 2000; // Pause at full sentence
+                speed = 2000;
                 isDeleting = true;
             } else if (isDeleting && currentCharIndex === 0) {
                 isDeleting = false;
                 currentPromptIndex = (currentPromptIndex + 1) % prompts.length;
-                speed = 500; // Pause before next sentence
+                speed = 500;
             }
 
             typingTimeout = setTimeout(typewriterEffect, speed);
@@ -395,7 +480,6 @@ NOTE_TEMPLATE = '''
             }
         });
 
-        // Start effect on load if empty
         if (textarea.value.length === 0) {
             typewriterEffect();
         }
