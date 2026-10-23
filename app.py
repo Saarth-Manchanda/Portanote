@@ -42,6 +42,7 @@ NOTE_TEMPLATE = '''
             flex-direction: column;
             align-items: center;
             border: 2px solid #2a2a2a;
+            box-sizing: border-box;
         }
         .header-row {
             display: flex;
@@ -154,17 +155,58 @@ NOTE_TEMPLATE = '''
         .copy-icon.copied + .copy-tooltip {
             opacity: 1;
         }
-        .share-link {
+        .share-section {
             margin-top: 1.5rem;
             background: #141414;
             border: 2px solid #2a2a2a;
-            padding: 1rem 1.2rem;
+            padding: 1.2rem;
             border-radius: 0px;
-            font-size: 0.95rem;
-            color: #a0a0a0;
-            word-break: break-all;
             width: 100%;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        .share-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .share-input {
+            flex: 1;
+            background: #121212;
+            border: 2px solid #2a2a2a;
+            color: #ff7b00;
+            padding: 0.6rem 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .copy-link-btn {
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 2px solid #2a2a2a;
+            padding: 0.6rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+        .copy-link-btn:hover {
+            background: #ff7b00;
+            border-color: #ff7b00;
+            color: #121212;
+        }
+        .share-tip {
+            font-size: 0.8rem;
+            color: #888888;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .share-tip strong {
+            color: #ff7b00;
         }
         a {
             color: #ff7b00;
@@ -195,6 +237,12 @@ NOTE_TEMPLATE = '''
                 margin-left: 0;
                 width: 100%;
             }
+            .share-row {
+                flex-direction: column;
+            }
+            .copy-link-btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -207,15 +255,19 @@ NOTE_TEMPLATE = '''
             </div>
             <div class="textarea-wrapper">
                 <textarea id="note-textarea" name="content" rows="18" cols="80">{{ content.strip() if content else '' }}</textarea>
-                <button type="button" class="copy-icon" onclick="copyText(this)" title="Copy to clipboard" tabindex="-1">
+                <button type="button" class="copy-icon" onclick="copyText(this)" title="Copy text to clipboard" tabindex="-1">
                     <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="0" ry="0"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
                 <span class="copy-tooltip" id="copy-tooltip">COPIED!</span>
             </div>
         </form>
         {% if note_id %}
-        <div class="share-link">
-            SHARE URL: <a href="/{{ note_id }}">{{ request.url_root }}{{ note_id }}</a>
+        <div class="share-section">
+            <div class="share-row">
+                <input type="text" id="share-link-input" class="share-input" value="{{ request.url_root }}{{ note_id }}" readonly>
+                <button type="button" class="copy-link-btn" onclick="copyShareLink(this)">[ Copy Link ]</button>
+            </div>
+            <p class="share-tip">Tip: You can access this note from anywhere by simply adding the code (<strong>{{ note_id }}</strong>) to the end of the URL (e.g., <code>yourwebsite.com/{{ note_id }}</code>).</p>
         </div>
         {% endif %}
     </div>
@@ -235,6 +287,22 @@ NOTE_TEMPLATE = '''
             setTimeout(() => {
                 btn.classList.remove('copied');
                 tooltip.style.opacity = 0;
+            }, 1200);
+        }
+
+        function copyShareLink(btn) {
+            const input = document.getElementById('share-link-input');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                navigator.clipboard.writeText(input.value);
+            }
+            const originalText = btn.innerText;
+            btn.innerText = '[ COPIED! ]';
+            setTimeout(() => {
+                btn.innerText = originalText;
             }, 1200);
         }
     </script>
