@@ -3,8 +3,10 @@
 A lightweight, high-performance, and beautifully designed web-based notepad built with Python and Flask. This application allows users to quickly paste, edit, and share notes via simple, unique URLs without requiring user registration or authentication.
 
 ---
+<img width="1335" height="688" alt="image" src="https://github.com/user-attachments/assets/32f51bad-1662-427d-bc80-244abed468ca" />
 
-## ✨ Features
+
+## Features
 
 * **Instant Note Creation:** Write or paste text and save it instantly.
 * **Shareable Links:** Generates a unique 5-character ID for every saved note (e.g., `https://your-app.onrender.com/aB12x`).
