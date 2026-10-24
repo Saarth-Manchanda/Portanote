@@ -57,7 +57,7 @@ WORDS = [
     'eager', 'ember', 'epoch', 'fable', 'fauna', 'fern', 'finch', 'flare', 
     'flora', 'forge', 'frame', 'gecko', 'giant', 'glade', 'glass', 'gleam', 
     'globe', 'gloom', 'grail', 'grove', 'guide', 'haven', 'hazel', 'honey', 
-    'ivory', 'jewel'
+    'ivory', 'jewel', 'speak', 'shook', 'video', 'touch', 'cyber'
 ]
 
 def generate_id():
