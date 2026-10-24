@@ -1,108 +1,101 @@
-# 📝 Minimalist Online Notepad
 
-A lightweight, high-performance, and beautifully designed web-based notepad built with Python and Flask. This application allows users to quickly paste, edit, and share notes via simple, unique URLs without requiring user registration or authentication.
+                                                            // PORTANOTE //
+                                                     Interactive Dot Matrix Edition
 
----
-<img width="1335" height="688" alt="image" src="https://github.com/user-attachments/assets/32f51bad-1662-427d-bc80-244abed468ca" />
+<img width="1366" height="766" alt="image" src="https://github.com/user-attachments/assets/51b54f53-d033-44d2-b063-faf67011e248" />
 
 
-## Features
+Portanote is a minimalist, retro-futuristic web-based note-taking application. 
+It pairs a brutalist, monospaced dark-mode interface with a fluid, cursor-reactive 
+dot matrix canvas background. Notes are saved securely to a PostgreSQL database 
+and mapped to catchy, random 5-letter word codes for instant sharing and recall.
 
-* **Instant Note Creation:** Write or paste text and save it instantly.
-* **Shareable Links:** Generates a unique 5-character ID for every saved note (e.g., `https://your-app.onrender.com/aB12x`).
-* **One-Click Copy:** Built-in fast clipboard copying with intuitive feedback tooltips.
-* **Clean & Responsive UI:** Designed with modern CSS gradients, glassmorphism UI elements, and a mobile-friendly flexible layout.
-* **Lightweight & Fast:** Uses minimal external dependencies for ultra-fast load times.
+-------------------------------------------------------------------------------
+[+] FEATURES
+-------------------------------------------------------------------------------
 
----
+* Interactive Dot Matrix Background
+  An HTML5 Canvas grid that dynamically repels and highlights dots based on 
+  cursor movement and touch interactions.
 
-## 🛠️ Tech Stack
+* Word-Based Identifiers
+  Notes are accessed via memorable 5-letter word keys (e.g., "apple", "beach", 
+  "orbit") instead of cryptic UUIDs or long numeric IDs.
 
-* **Backend:** Python 3, Flask
-* **Production Server:** Gunicorn
-* **Frontend:** HTML5, CSS3, JavaScript (vanilla)
-* **Storage:** Local text file-based storage (`/notes`)
+* Persistent PostgreSQL Storage
+  Integrated with Neon (or any standard PostgreSQL database) via environment 
+  variables using `psycopg2`.
 
----
+* Instant Clipboard Actions
+  One-click copy buttons for note text and shareable URLs with smooth visual 
+  tooltips.
 
-## 🚀 Local Development Setup
+* Dynamic Typewriter Placeholder
+  Cycles through helpful usage prompts in the text area when empty.
 
-To run this application locally on your machine, follow these steps:
+* Responsive Brutalist UI
+  Optimized layout with sharp borders, hard shadows, and clean scaling across 
+  mobile and desktop screens.
 
-### Prerequisites
-Make sure you have **Python 3.8+** installed on your system.
+-------------------------------------------------------------------------------
+[#] TECH STACK
+-------------------------------------------------------------------------------
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/your-username/online-notepad.git
-cd online-notepad
-```
+* Backend:  Python, Flask
+* Database: PostgreSQL (psycopg2)
+* Frontend: HTML5, CSS3, Vanilla JavaScript, HTML5 Canvas API
+* Fonts:    JetBrains Mono (Google Fonts)
 
-### 2. Set Up a Virtual Environment (Optional but Recommended)
-```bash
-# macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
+-------------------------------------------------------------------------------
+[>] GETTING STARTED
+-------------------------------------------------------------------------------
 
-# Windows
-python -m venv venv
-venv\Scripts\activate
-```
+1. Prerequisites
+   Ensure you have Python 3.8+ installed along with a PostgreSQL connection 
+   string (e.g., from Neon.tech or a local instance).
 
-### 3. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+2. Clone & Setup
+   Save the code as `app.py`.
 
-### 4. Run the Application
-```bash
-python app.py
-```
+3. Install Dependencies
+   $ pip install flask psycopg2-binary
 
-Open your browser and navigate to `http://127.0.0.1:5000/`.
+4. Set Environment Variables
+   Set your PostgreSQL connection string:
 
----
+   - Linux / macOS:
+     $ export DATABASE_URL="postgres://user:password@host:5432/dbname?sslmode=require"
 
-## 📂 Project Structure
+   - Windows (CMD):
+     > set DATABASE_URL="postgres://user:password@host:5432/dbname?sslmode=require"
 
-```text
-online-notepad/
-├── app.py              # Main Flask application logic & routing
-├── requirements.txt    # Python dependencies (Flask, Gunicorn)
-├── notes/              # Directory created automatically to store note text files
-├── .gitignore          # Ignores virtual environments and dynamic note files
-└── README.md           # Project documentation
-```
+   - Windows (PowerShell):
+     > $env:DATABASE_URL="postgres://user:password@host:5432/dbname?sslmode=require"
 
----
+5. Run the Server
+   $ python app.py
 
-## ☁️ Deploying to Render
+   Navigate to http://localhost:5000 in your browser.
 
-This repository is pre-configured to deploy seamlessly on [Render](https://render.com/).
+-------------------------------------------------------------------------------
+[*] USAGE GUIDE
+-------------------------------------------------------------------------------
 
-### Deployment Steps:
+1. Creating a Note
+   Type or paste content into the editor and click [ Save Note ]. A random 5-letter 
+   code will be assigned and the page will redirect to the note's shareable link.
 
-1. Push your project code to a public or private **GitHub** repository.
-2. Log in to your **Render Dashboard** and click **New +** > **Web Service**.
-3. Connect your GitHub repository.
-4. Configure the Web Service settings:
-   * **Name:** `online-notepad` (or your preferred name)
-   * **Runtime:** `Python 3`
-   * **Build Command:** `pip install -r requirements.txt`
-   * **Start Command:** `gunicorn app:app`
-5. Click **Create Web Service**.
+2. Accessing a Note
+   Enter a valid 5-letter code into the top search bar and click [ Open Note ], 
+   or directly navigate to `/<code_name>` in your browser address bar.
 
-> 📌 **Note on Free-Tier Hosting:** Serverless platforms and free hosting tiers use ephemeral disk storage. Notes saved locally to the `/notes` folder will reset when the service restarts or redeploys. For permanent data persistence, consider integrating a cloud database (such as Supabase, PostgreSQL, or MongoDB Atlas).
+3. Deleting a Note
+   Click the red [ Delete ] button on an existing note's page to permanently 
+   remove it from the database.
 
----
+-------------------------------------------------------------------------------
+[@] AUTHOR
+-------------------------------------------------------------------------------
 
-## 🛡️ Security & Best Practices
-
-* **Path Traversal Protection:** The application uses sanitized ID generators to prevent directory traversal attacks.
-* **Environment Configuration:** Ensure `debug=True` is disabled when running in production.
-
----
-
-## 📄 License
-
-This project is open-source and available under the [MIT License](LICENSE).
+Created by Saarth Manchanda
+GitHub: https://github.com/Saarth-Manchanda
