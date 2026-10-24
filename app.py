@@ -14,7 +14,6 @@ def get_db_connection():
     if not DATABASE_URL:
         raise RuntimeError("DATABASE_URL environment variable is not set!")
     
-    # Parse the URL to handle standard Neon connection strings
     url = urlparse(DATABASE_URL)
     return psycopg2.connect(
         database=url.path[1:],
@@ -43,7 +42,6 @@ def init_db():
     except Exception as e:
         print(f"Database initialization error: {e}")
 
-# Initialize the notes table on startup
 init_db()
 
 WORDS = [
@@ -87,7 +85,11 @@ NOTE_TEMPLATE = '''
             color: #e0e0e0;
         }
         .container {
-            background: #181818;
+            --color: rgba(114, 114, 114, 0.2);
+            background-color: #191a1a;
+            background-image: linear-gradient(0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent),
+                              linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent);
+            background-size: 55px 55px;
             border-radius: 0px;
             box-shadow: 8px 8px 0px #0a0a0a;
             padding: 2.5rem;
