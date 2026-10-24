@@ -42,6 +42,7 @@ def init_db():
     except Exception as e:
         print(f"Database initialization error: {e}")
 
+# Initialize the notes table on startup
 init_db()
 
 WORDS = [
@@ -73,34 +74,53 @@ NOTE_TEMPLATE = '''
     <meta name="theme-color" content="#ff7b00">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background: #121212;
-            min-height: 100vh;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            background-color: #1a1a1a;
+            user-select: none;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: block;
+            touch-action: none;
+            z-index: 0;
+        }
+        body {
+            min-height: 100vh;
             font-family: 'JetBrains Mono', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             color: #e0e0e0;
+            position: relative;
+            z-index: 10;
         }
         .container {
-            --color: rgba(114, 114, 114, 0.2);
-            background-color: #191a1a;
-            background-image: linear-gradient(0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent),
-                              linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent);
-            background-size: 55px 55px;
+            background: #181818;
             border-radius: 0px;
             box-shadow: 8px 8px 0px #0a0a0a;
             padding: 2.5rem;
             max-width: 700px;
             width: 100%;
-            margin: 2rem 2rem 1rem 2.5rem;
+            margin: 2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             border: 2px solid #2a2a2a;
             box-sizing: border-box;
+            z-index: 10;
         }
         .header-row {
             display: flex;
@@ -348,18 +368,17 @@ NOTE_TEMPLATE = '''
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            z-index: 10;
         }
         .footer a {
             color: #777777;
             display: flex;
             align-items: center;
             text-decoration: none;
-            border-bottom: none;
             transition: color 0.2s;
         }
         .footer a:hover {
             color: #ff7b00;
-            border-bottom: none;
         }
         a {
             color: #ff7b00;
@@ -413,6 +432,8 @@ NOTE_TEMPLATE = '''
     </style>
 </head>
 <body>
+    <canvas id="matrixCanvas"></canvas>
+
     <div class="container">
         <div class="header-row">
             <h1>// Portanote</h1>
@@ -461,6 +482,141 @@ NOTE_TEMPLATE = '''
     </div>
 
     <script>
+        // Background Dot Matrix Animation Script
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const SPACING = 28;
+        const DOT_RADIUS = 2;
+        const REPULSION_RADIUS = 140;
+        const SMOOTH_FACTOR = 0.08;
+
+        const BG_COLOR = '#1a1a1a';
+        const BASE_DOT_COLOR = '#444444';
+        const ACTIVE_DOT_COLOR = '#888888';
+
+        const mouse = {
+            x: -1000,
+            y: -1000,
+            targetX: -1000,
+            targetY: -1000,
+            active: false
+        };
+
+        let dots = [];
+
+        class Dot {
+            constructor(x, y) {
+                this.baseX = x;
+                this.baseY = y;
+                this.x = x;
+                this.y = y;
+            }
+
+            update() {
+                const dx = mouse.x - this.baseX;
+                const dy = mouse.y - this.baseY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                let targetX = this.baseX;
+                let targetY = this.baseY;
+
+                if (distance < REPULSION_RADIUS && mouse.active) {
+                    const force = (1 - (distance / REPULSION_RADIUS)) ** 2.5;
+                    const angle = Math.atan2(dy, dx);
+                    const maxOffset = 45;
+                    targetX = this.baseX - Math.cos(angle) * force * maxOffset;
+                    targetY = this.baseY - Math.sin(angle) * force * maxOffset;
+                }
+
+                this.x += (targetX - this.x) * SMOOTH_FACTOR;
+                this.y += (targetY - this.y) * SMOOTH_FACTOR;
+            }
+
+            draw() {
+                const dispX = this.x - this.baseX;
+                const dispY = this.y - this.baseY;
+                const displacement = Math.sqrt(dispX * dispX + dispY * dispY);
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, DOT_RADIUS, 0, Math.PI * 2);
+                ctx.fillStyle = displacement > 0.8 ? ACTIVE_DOT_COLOR : BASE_DOT_COLOR;
+                ctx.fill();
+            }
+        }
+
+        function initGrid() {
+            dots = [];
+            const width = canvas.width;
+            const height = canvas.height;
+
+            const cols = Math.ceil(width / SPACING) + 1;
+            const rows = Math.ceil(height / SPACING) + 1;
+            const offsetX = (width - (cols - 1) * SPACING) / 2;
+            const offsetY = (height - (rows - 1) * SPACING) / 2;
+
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    const x = offsetX + i * SPACING;
+                    const y = offsetY + j * SPACING;
+                    dots.push(new Dot(x, y));
+                }
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initGrid();
+        }
+
+        function animate() {
+            mouse.x += (mouse.targetX - mouse.x) * 0.2;
+            mouse.y += (mouse.targetY - mouse.y) * 0.2;
+
+            ctx.fillStyle = BG_COLOR;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].update();
+                dots[i].draw();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function handleMouseMove(e) {
+            mouse.targetX = e.clientX;
+            mouse.targetY = e.clientY;
+            mouse.active = true;
+        }
+
+        function handleTouchMove(e) {
+            if (e.touches.length > 0) {
+                mouse.targetX = e.touches[0].clientX;
+                mouse.targetY = e.touches[0].clientY;
+                mouse.active = true;
+            }
+        }
+
+        function handleMouseLeave() {
+            mouse.targetX = -1000;
+            mouse.targetY = -1000;
+            mouse.active = false;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('touchmove', handleTouchMove, { passive: true });
+        window.addEventListener('touchstart', handleTouchMove, { passive: true });
+        document.addEventListener('mouseleave', handleMouseLeave);
+
+        window.onload = function () {
+            resizeCanvas();
+            animate();
+        };
+
+        // App Interaction Scripts
         function openNote() {
             const code = document.getElementById('lookup-code').value.trim().toLowerCase();
             if (code) {
