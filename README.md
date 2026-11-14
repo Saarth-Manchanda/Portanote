@@ -1,6 +1,6 @@
 
-                                                            // PORTANOTE //
-                                                     Interactive Dot Matrix Edition
+                                                    // PORTANOTE //
+                                                
 
 <img width="1366" height="766" alt="image" src="https://github.com/user-attachments/assets/51b54f53-d033-44d2-b063-faf67011e248" />
 
