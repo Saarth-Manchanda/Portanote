@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 app = Flask(__name__)
 
-# Neon PostgreSQL connection string from environment variables
+# Neon PostgreSQL connection 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def get_db_connection():
@@ -42,7 +42,7 @@ def init_db():
     except Exception as e:
         print(f"Database initialization error: {e}")
 
-# Initialize the notes table on startup
+# Initialize notes
 init_db()
 
 WORDS = [
@@ -630,6 +630,7 @@ NOTE_TEMPLATE = '''
             "Paste code snippets here...",
             "Keep notes accessible anywhere...",
             "Draft a quick to-do list..."
+            "A to do list in mind?..."
         ];
         let currentPromptIndex = 0;
         let currentCharIndex = 0;
